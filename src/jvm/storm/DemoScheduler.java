@@ -76,7 +76,7 @@ public class DemoScheduler implements IScheduler {
                 }
             }
         }
-        new backtype.storm.DefaultScheduler().schedule(topologies, cluster);
+        new backtype.storm.scheduler.DefaultScheduler().schedule(topologies, cluster);
     }
 
 }
