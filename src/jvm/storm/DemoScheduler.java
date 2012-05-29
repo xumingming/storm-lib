@@ -1,16 +1,17 @@
 package storm;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import backtype.storm.scheduler.Cluster;
+import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.scheduler.IScheduler;
 import backtype.storm.scheduler.SupervisorDetails;
 import backtype.storm.scheduler.Topologies;
 import backtype.storm.scheduler.TopologyDetails;
 import backtype.storm.scheduler.WorkerSlot;
+import backtype.storm.scheduler.DefaultScheduler;
 
 /**
  * This demo scheduler make sure a spout named <code>special-spout</code> in topology <code>special-topology</code> runs
@@ -32,10 +33,10 @@ public class DemoScheduler implements IScheduler {
             System.out.println("Our special topology needs scheduling.");
             if (needsScheduling) {
                 // find out all the needs-scheduling components of this topology
-                Map<String, List<Integer>> componentToTasks = cluster.getNeedsSchedulingComponentToTasks(topology);
-                if (componentToTasks.containsKey("special-spout")) {
+                Map<String, List<ExecutorDetails>> componentToExecutors = cluster.getNeedsSchedulingComponentToExecutors(topology);
+                if (componentToExecutors.containsKey("special-spout")) {
                     System.out.println("Found the special-spout.");
-                    List<Integer> tasks = componentToTasks.get("special-spout");
+                    List<ExecutorDetails> executors = componentToExecutors.get("special-spout");
 
                     // find out the our "special-supervisor" from the supervisor metadata
                     Collection<SupervisorDetails> supervisors = cluster.getSupervisors().values();
@@ -53,30 +54,24 @@ public class DemoScheduler implements IScheduler {
                     if (specialSupervisor != null) {
                         List<WorkerSlot> availableSlots = cluster.getAvailableSlots(specialSupervisor);
                         // if there is no available slots on this supervisor, free some.
-                        if (availableSlots.isEmpty() && !tasks.isEmpty()) {
-                            for (Integer task : specialSupervisor.getAllPorts()) {
-                                cluster.freeSlot(new WorkerSlot(specialSupervisor.getId(), task));
+                        if (availableSlots.isEmpty() && !executors.isEmpty()) {
+                            for (Integer port : specialSupervisor.getAllPorts()) {
+                                cluster.freeSlot(new WorkerSlot(specialSupervisor.getId(), port));
                             }
                         }
 
                         // re-get the aviableSlots
                         availableSlots = cluster.getAvailableSlots(specialSupervisor);
-                        int taskPerSlot = tasks.size() / availableSlots.size();
-
-                        // calculate how many tasks per slot
-                        if (taskPerSlot * availableSlots.size() < tasks.size()) {
-                            taskPerSlot += 1;
-                        }
 
                         // since it is just a demo, to keep things simple, we assign all the
-                        // tasks into one slot.
-                        cluster.assign(availableSlots.get(0), topology.getId(), tasks);
-                        System.out.println("We assigned tasks:" + tasks + " to slot: [" + availableSlots.get(0).getNodeId() + ", " + availableSlots.get(0).getPort() + "]");
+                        // executors into one slot.
+                        cluster.assign(availableSlots.get(0), topology.getId(), executors);
+                        System.out.println("We assigned executors:" + executors + " to slot: [" + availableSlots.get(0).getNodeId() + ", " + availableSlots.get(0).getPort() + "]");
                     }
                 }
             }
         }
-        new backtype.storm.scheduler.EvenScheduler().schedule(topologies, cluster);
+        new DefaultScheduler().schedule(topologies, cluster);
     }
 
 }
