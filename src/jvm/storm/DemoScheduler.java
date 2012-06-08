@@ -55,7 +55,8 @@ public class DemoScheduler implements IScheduler {
                         List<WorkerSlot> availableSlots = cluster.getAvailableSlots(specialSupervisor);
                         // if there is no available slots on this supervisor, free some.
                         if (availableSlots.isEmpty() && !executors.isEmpty()) {
-                            for (Integer port : specialSupervisor.getAllPorts()) {
+                            for (Object portObj : (List)specialSupervisor.getMeta()) {
+                                Integer port = (Integer)portObj;
                                 cluster.freeSlot(new WorkerSlot(specialSupervisor.getId(), port));
                             }
                         }
@@ -71,7 +72,11 @@ public class DemoScheduler implements IScheduler {
                 }
             }
         }
-        new DefaultScheduler().schedule(topologies, cluster);
+        
+        // let system's even scheduler handle the rest scheduling work
+        // you can also use your own other scheduler here, this is what
+        // makes storm's scheduler composable.
+        new EvenScheduler().schedule(topologies, cluster);
     }
 
 }
