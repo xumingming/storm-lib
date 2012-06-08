@@ -11,7 +11,6 @@ import backtype.storm.scheduler.SupervisorDetails;
 import backtype.storm.scheduler.Topologies;
 import backtype.storm.scheduler.TopologyDetails;
 import backtype.storm.scheduler.WorkerSlot;
-import backtype.storm.scheduler.DefaultScheduler;
 
 /**
  * This demo scheduler make sure a spout named <code>special-spout</code> in topology <code>special-topology</code> runs
@@ -53,10 +52,11 @@ public class DemoScheduler implements IScheduler {
                     // found the special supervisor
                     if (specialSupervisor != null) {
                         List<WorkerSlot> availableSlots = cluster.getAvailableSlots(specialSupervisor);
+                        
                         // if there is no available slots on this supervisor, free some.
+                        // TODO for simplicity, we free all the used slots on the supervisor.
                         if (availableSlots.isEmpty() && !executors.isEmpty()) {
-                            for (Object portObj : (List)specialSupervisor.getMeta()) {
-                                Integer port = (Integer)portObj;
+                            for (Integer port : cluster.getUsedPorts(specialSupervisor)) {
                                 cluster.freeSlot(new WorkerSlot(specialSupervisor.getId(), port));
                             }
                         }
@@ -76,7 +76,7 @@ public class DemoScheduler implements IScheduler {
         // let system's even scheduler handle the rest scheduling work
         // you can also use your own other scheduler here, this is what
         // makes storm's scheduler composable.
-        new EvenScheduler().schedule(topologies, cluster);
+        new backtype.storm.scheduler.EvenScheduler().schedule(topologies, cluster);
     }
 
 }
