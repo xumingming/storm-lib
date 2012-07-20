@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import backtype.storm.scheduler.Cluster;
+import backtype.storm.scheduler.EvenScheduler;
 import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.scheduler.IScheduler;
 import backtype.storm.scheduler.SupervisorDetails;
@@ -15,8 +16,20 @@ import backtype.storm.scheduler.WorkerSlot;
 /**
  * This demo scheduler make sure a spout named <code>special-spout</code> in topology <code>special-topology</code> runs
  * on a supervisor named <code>special-supervisor</code>. supervisor does not have name? You can configure it through
- * the config: <code>supervisor.scheduler.meta</code> you can configure anything in it.
+ * the config: <code>supervisor.scheduler.meta</code> -- actually you can put any config you like in this config item.
  * 
+ * In our example, we need to put the following config in supervisor's <code>storm.yaml</code>:
+ * <pre>
+ *     # give our supervisor a name: "special-supervisor"
+ *     supervisor.scheduler.meta:
+ *       name: "special-supervisor"
+ * </pre>
+ * 
+ * Put the following config in <code>nimbus</code>'s <code>storm.yaml</code>:
+ * <pre>
+ *     # tell nimbus to use this custom scheduler
+ *     storm.scheduler: "storm.DemoScheduler"
+ * </pre>
  * @author xumingmingv May 19, 2012 11:10:43 AM
  */
 public class DemoScheduler implements IScheduler {
@@ -76,7 +89,7 @@ public class DemoScheduler implements IScheduler {
         // let system's even scheduler handle the rest scheduling work
         // you can also use your own other scheduler here, this is what
         // makes storm's scheduler composable.
-        new backtype.storm.scheduler.EvenScheduler().schedule(topologies, cluster);
+        new EvenScheduler().schedule(topologies, cluster);
     }
 
 }
