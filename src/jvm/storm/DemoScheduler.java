@@ -8,6 +8,7 @@ import backtype.storm.scheduler.Cluster;
 import backtype.storm.scheduler.EvenScheduler;
 import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.scheduler.IScheduler;
+import backtype.storm.scheduler.SchedulerAssignment;
 import backtype.storm.scheduler.SupervisorDetails;
 import backtype.storm.scheduler.Topologies;
 import backtype.storm.scheduler.TopologyDetails;
@@ -35,6 +36,7 @@ import backtype.storm.scheduler.WorkerSlot;
 public class DemoScheduler implements IScheduler {
 
     public void schedule(Topologies topologies, Cluster cluster) {
+    	System.out.println("DemoScheduler: begin scheduling");
         // Gets the topology which we want to schedule
         TopologyDetails topology = topologies.getByName("special-topology");
 
@@ -42,12 +44,26 @@ public class DemoScheduler implements IScheduler {
         if (topology != null) {
             boolean needsScheduling = cluster.needsScheduling(topology);
 
-            System.out.println("Our special topology needs scheduling.");
-            if (needsScheduling) {
+            if (!needsScheduling) {
+            	System.out.println("Our special topology DOES NOT NEED scheduling.");
+            } else {
+            	System.out.println("Our special topology needs scheduling.");
                 // find out all the needs-scheduling components of this topology
                 Map<String, List<ExecutorDetails>> componentToExecutors = cluster.getNeedsSchedulingComponentToExecutors(topology);
-                if (componentToExecutors.containsKey("special-spout")) {
-                    System.out.println("Found the special-spout.");
+                
+                System.out.println("needs scheduling(component->executor): " + componentToExecutors);
+                System.out.println("needs scheduling(executor->compoenents): " + cluster.getNeedsSchedulingExecutorToComponents(topology));
+                SchedulerAssignment currentAssignment = cluster.getAssignmentById(topologies.getByName("special-topology").getId());
+                if (currentAssignment != null) {
+                	System.out.println("current assignments: " + currentAssignment.getExecutorToSlot());
+                } else {
+                	System.out.println("current assignments: {}");
+                }
+                
+                if (!componentToExecutors.containsKey("special-spout")) {
+                	System.out.println("Our special-spout DOES NOT NEED scheduling.");
+                } else {
+                    System.out.println("Our special-spout needs scheduling.");
                     List<ExecutorDetails> executors = componentToExecutors.get("special-spout");
 
                     // find out the our "special-supervisor" from the supervisor metadata
@@ -64,6 +80,7 @@ public class DemoScheduler implements IScheduler {
 
                     // found the special supervisor
                     if (specialSupervisor != null) {
+                    	System.out.println("Found the special-supervisor");
                         List<WorkerSlot> availableSlots = cluster.getAvailableSlots(specialSupervisor);
                         
                         // if there is no available slots on this supervisor, free some.
@@ -81,6 +98,8 @@ public class DemoScheduler implements IScheduler {
                         // executors into one slot.
                         cluster.assign(availableSlots.get(0), topology.getId(), executors);
                         System.out.println("We assigned executors:" + executors + " to slot: [" + availableSlots.get(0).getNodeId() + ", " + availableSlots.get(0).getPort() + "]");
+                    } else {
+                    	System.out.println("There is no supervisor named special-supervisor!!!");
                     }
                 }
             }
