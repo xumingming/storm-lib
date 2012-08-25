@@ -8,6 +8,8 @@ import junit.framework.TestCase;
 import backtype.storm.Config;
 import backtype.storm.ILocalCluster;
 import backtype.storm.Testing;
+import backtype.storm.generated.AlreadyAliveException;
+import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -123,16 +125,16 @@ public class TestingApiDemo extends TestCase {
 						completeTopologyParam);
 
 				// check whether the result is right
-				assertTrue(Testing.eq(Utils.list(new Values("nathan"),
+				assertTrue(Testing.eq(new Values(new Values("nathan"),
 						new Values("bob"), new Values("joey"), new Values(
 								"nathan")), Testing.readTuples(result, "1")));
-				assertTrue(Testing.eq(Utils.list(new Values("nathan", 1),
+				assertTrue(Testing.eq(new Values(new Values("nathan", 1),
 						new Values("nathan", 2), new Values("bob", 1),
 						new Values("joey", 1)), Testing.readTuples(result, "2Te")));
-				assertTrue(Testing.eq(Utils.list(new Values(1), new Values(2),
+				assertTrue(Testing.eq(new Values(new Values(1), new Values(2),
 						new Values(3), new Values(4)), Testing.readTuples(
 						result, "3")));
-				assertTrue(Testing.eq(Utils.list(new Values(1), new Values(2),
+				assertTrue(Testing.eq(new Values(new Values(1), new Values(2),
 						new Values(3), new Values(4)), Testing.readTuples(
 						result, "4")));
 			}
@@ -163,12 +165,20 @@ public class TestingApiDemo extends TestCase {
 				TrackedTopology tracked = Testing.mkTrackedTopology(cluster,
 						topology);
 
-				Testing.submitLocalTopology(cluster,
-						"test-acking2", new Config(), tracked.getTopology());
-				feederSpout.feed(Utils.list(1));
+				try {
+					cluster.submitTopology(
+							"test-acking2", new Config(), tracked.getTopology());
+				} catch (AlreadyAliveException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidTopologyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				feederSpout.feed(new Values(1));
 				Testing.trackedWait(tracked, 1);
 				checker(tracker, 0);
-				feederSpout.feed(Utils.list(1));
+				feederSpout.feed(new Values(1));
 				Testing.trackedWait(tracked, 1);
 				checker(tracker, 2);
 			}
@@ -200,8 +210,16 @@ public class TestingApiDemo extends TestCase {
 				/**
 				 * TODO
 				 */
-				Testing.submitLocalTopology(cluster,
-						"timeout-tester", topologyConfig, topology);
+				try {
+					cluster.submitTopology(
+							"timeout-tester", topologyConfig, topology);
+				} catch (AlreadyAliveException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidTopologyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
 				feeder.feed(new Values("a"), 1);
 				feeder.feed(new Values("b"), 2);
