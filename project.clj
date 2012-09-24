@@ -3,5 +3,5 @@
   :source-path "src/clj"
   :java-source-path "src/jvm"
   :dependencies [[org.clojure/clojure "1.3.0"]
-                 [storm/storm "0.8.0-SNAPSHOT"]]
+                 [storm/storm "0.8.1"]]
   :aot :all)
