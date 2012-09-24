@@ -125,16 +125,16 @@ public class TestingApiDemo extends TestCase {
 						completeTopologyParam);
 
 				// check whether the result is right
-				assertTrue(Testing.eq(new Values(new Values("nathan"),
+				assertTrue(Testing.multiseteq(new Values(new Values("nathan"),
 						new Values("bob"), new Values("joey"), new Values(
 								"nathan")), Testing.readTuples(result, "1")));
-				assertTrue(Testing.eq(new Values(new Values("nathan", 1),
+				assertTrue(Testing.multiseteq(new Values(new Values("nathan", 1),
 						new Values("nathan", 2), new Values("bob", 1),
 						new Values("joey", 1)), Testing.readTuples(result, "2Te")));
-				assertTrue(Testing.eq(new Values(new Values(1), new Values(2),
+				assertTrue(Testing.multiseteq(new Values(new Values(1), new Values(2),
 						new Values(3), new Values(4)), Testing.readTuples(
 						result, "3")));
-				assertTrue(Testing.eq(new Values(new Values(1), new Values(2),
+				assertTrue(Testing.multiseteq(new Values(new Values(1), new Values(2),
 						new Values(3), new Values(4)), Testing.readTuples(
 						result, "4")));
 			}
