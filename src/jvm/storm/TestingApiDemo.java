@@ -19,6 +19,7 @@ import backtype.storm.testing.CompleteTopologyParam;
 import backtype.storm.testing.FeederSpout;
 import backtype.storm.testing.IdentityBolt;
 import backtype.storm.testing.MkClusterParam;
+import backtype.storm.testing.MkTupleParam;
 import backtype.storm.testing.MockedSources;
 import backtype.storm.testing.TestAggregatesCounter;
 import backtype.storm.testing.TestGlobalCount;
@@ -33,7 +34,6 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Time;
-import backtype.storm.utils.Utils;
 
 /**
  * This class is the unit test for backtype.storm.Testing. Also it provides the samples about how to 
@@ -235,6 +235,26 @@ public class TestingApiDemo extends TestCase {
 				assertFailed(tracker, 2);
 			}
 		});
+	}
+	
+	/**
+	 * show how to use testTuple
+	 */
+	public void testTestTuple() {
+		// only specify values
+		Tuple tuple = Testing.testTuple(new Values("james", "bond"));
+		Testing.multiseteq(new Values("james", "bond"), tuple.getValues());
+		
+		// specify stream, component and fields
+		MkTupleParam param = new MkTupleParam();
+		param.setStream("test-stream");
+		param.setComponent("test-component");
+		param.setFields("fname", "lname");
+		tuple = Testing.testTuple(new Values("james", "bond"), param);
+		Testing.multiseteq(new Values("james", "bond"), tuple.getValues());
+		assertEquals("test-stream", tuple.getSourceStreamId());
+		assertEquals("test-component", tuple.getSourceComponent());
+		Testing.multiseteq(new Values("fname", "lname"), tuple.getFields().toList());
 	}
 
 	public static void assertAcked(AckFailMapTracker tracker, Object... ids) {
