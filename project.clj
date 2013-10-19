@@ -2,6 +2,6 @@
   :description "storm-lib"
   :source-path "src/clj"
   :java-source-path "src/jvm"
-  :dependencies [[org.clojure/clojure "1.3.0"]
-                 [storm/storm "0.8.2-wip15"]]
+  :dependencies [[org.clojure/clojure "1.5.0"]
+                 [storm/storm "0.9.0-rc2"]]
   :aot :all)
