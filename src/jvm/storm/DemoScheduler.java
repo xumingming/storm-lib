@@ -34,6 +34,7 @@ import backtype.storm.scheduler.WorkerSlot;
  * @author xumingmingv May 19, 2012 11:10:43 AM
  */
 public class DemoScheduler implements IScheduler {
+    public void prepare(Map conf) {}
 
     public void schedule(Topologies topologies, Cluster cluster) {
     	System.out.println("DemoScheduler: begin scheduling");
